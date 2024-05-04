@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        :root {
+            --main-color: #9290C3;
+            --secondary-color: #535C91;
+            --dark-color: #1B1A55;
+            --darkest-color: #070F2B;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--darkest-color);
+            color: #fff;
+        }
+
+        .container {
+            width: 95%;
+            margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 100%;
+            }
+        }
+
+        .canser-brain {
+            display: flex;
+            background: rgba(255, 255, 255, 0.8);
+            position: absolute;
+            width: 100%;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 20px;
+            min-height: 35rem;
+            overflow: hidden;
+        }
+
+
+        .right-section {
+            width: 30%;
+            background: var(--main-color);
+            text-align: center;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .right-section {
+                margin-right: 0;
+            }
+        }
+
+        .right-section input {
+            display: none;
+        }
+
+        .right-section label {
+            font-size: 20px;
+            text-transform: capitalize;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+            cursor: pointer;
+        }
+        .right-section img{
+            border-radius: 10px;
+            width: 90%;
+        }
+
+        .left-section {
+            padding: 5px;
+            width: 70%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        @media screen and (max-width: 768px) {
+            .left-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-section div {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            border-radius: 10px;
+        }
+
+        .left-section div img {
+            max-width: 350px;
+            height: 200px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .left-section div button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: var(--dark-color);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .left-section div button:hover {
+            background-color: #388e3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="canser-brain">
+            <div class="right-section">
+                <label for="imageInput">Choose photo</label>
+                <input type="file" name="imageInput" id="imageInput">
+                <div id="imageContainer"></div>
+            </div>
+            <div class="left-section">
+                <div>
+                    <img id="filteredImage" src="#" name="filter" alt="Filtered Image">
+                    <button onclick="getImage(filteredImage , 'filter')">Apply Filter</button>
+                </div>
+                <div>
+                    <img id="ThresholdImage" src="#" name="threshold" alt="ThresholdImage">
+                    <button onclick="getImage(ThresholdImage , 'threshold')">Apply Threshold</button>
+                </div>
+                <div>
+                    <img id="Rectangle" src="#" name="rect" alt="Rectangle">
+                    <button onclick="getImage(Rectangle , 'rect')">Draw Rect</button>
+                </div>
+                <div>
+                    <img id="Border" src="#" name="border" alt="border">
+                    <button onclick="getImage(Border , 'border')">Draw Border</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+              document.getElementById('imageInput').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var image = new Image();
+                    image.src = e.target.result;
+                    image.onload = function() {
+                        var imageContainer = document.getElementById('imageContainer');
+                        imageContainer.innerHTML = ''; // Clear previous images
+                        imageContainer.appendChild(image);
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function getImage(btnName , name){
+            var input, file, reader, img;
+            input = document.getElementById('imageInput');
+            file = input.files[0];
+            reader = new FileReader();
+
+            reader.onload = function(event) {
+                img = btnName;
+                img.src = event.target.result;
+                img.style.display = 'block';
+                $.post(`/${name}`, { image_data: event.target.result }, function(data) {
+                    img.src = 'data:image/jpeg;base64,' + data;
+                });
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
